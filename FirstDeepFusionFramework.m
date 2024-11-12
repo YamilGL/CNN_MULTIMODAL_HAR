@@ -38,8 +38,8 @@ YTrain2 = trainingDS2.Labels;
 YTest2 = validationDS2.Labels;
 
 %% FUSING THE features by Concatenation
-size(featuresTrain1)
-size(featuresTrain2)
+size(featuresTrain1);
+size(featuresTrain2);
 
 FeaturesTrain1=[featuresTrain1;featuresTrain2];
 FeaturesTest1=[featuresTest1;featuresTest2];
@@ -114,4 +114,29 @@ classifier = fitcecoc(FeatureTrain,YTrain);
 YPred = predict(classifier,FeatureTest);
 confMat = confusionmat(YTest,YPred);
 confMat = bsxfun(@rdivide,confMat,sum(confMat,2));
-accuracy = mean(YPred == YTest)
+accuracy = mean(YPred == YTest);
+
+
+% Confusion Matrix
+confMat = confusionmat(YTest, YPred);
+confMatNorm = bsxfun(@rdivide, confMat, sum(confMat, 2))  % Normalized Confusion Matrix
+
+% Precision, Recall, and F1-score
+precision = diag(confMat) ./ sum(confMat, 2);
+recall = diag(confMat) ./ sum(confMat, 1)';
+f1Score = 2 * (precision .* recall) ./ (precision + recall);
+
+% Display Precision, Recall, and F1-score for each class
+for i = 1:numel(precision)
+    fprintf('Class %d: Precision = %.4f, Recall = %.4f, F1 Score = %.4f\n', i, precision(i), recall(i), f1Score(i));
+end
+
+% Cohen's Kappa
+total = sum(confMat(:));
+p0 = trace(confMat) / total;
+pe = sum(sum(confMat, 1) .* sum(confMat, 2)) / total^2;
+kappa = (p0 - pe) / (1 - pe);
+fprintf('Cohen''s Kappa: %.4f\n', kappa);
+
+% Display Accuracy
+fprintf('Overall Accuracy: %.4f\n', accuracy);
